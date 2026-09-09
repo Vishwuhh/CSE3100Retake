@@ -148,4 +148,36 @@ long long int <-> long long
 // also includes unsigned versions of these
 ```
 - their sizes depends on the CPU architecture and compiler 
-### x86_64 sizes
+> How to determine memory space requirements when running my program?
+- **Read and memorize hardware manual for every computer arch design from the 80s onward**
+## How much space?
+- *how to determine amont of space for some type?*
+  - sizeof() gives **number of bytes** needed for a specific type or variable
+### Example Code to Check Equality
+```C
+#include <stdio.h>
+
+int main(void){
+  int h1 = 72;
+  char h2 = 'H';
+  if(h1 == h2) {
+    print("They are equal!\n");
+  } else{
+    printf("They are not equal!\n");
+  }
+  return 0;
+}
+```
+- the result would be "They are equal!"
+## Char Data Type
+- has 8 bits (one byte) per char
+- ASCII code
+  - chars are mapped to an integer between 0 and 127
+  - ASCII char can be stored in char
+- classes in ASCII
+  - 0-31: "control" character (non printable)
+  - 48-57: digits
+  - 65-90: uppercase letters
+  - 97-122: lowercase letters
+## Automatic Type Conversion
+- 
