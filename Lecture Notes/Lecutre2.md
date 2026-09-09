@@ -78,3 +78,50 @@ if(i<j){
 }
 ```
 ## Bad Coding: Dangling Else
+```C
+if (a) if (b) s1++; else s2++;
+```
+- assuming a is true and b is false, should we do s1++ or s2++?
+```C
+#include <stdio.h>
+
+int main(void){
+    // starting vars
+    int s1 = 0;
+    int s2 = 0;
+    int a = 1;
+    int b = 0;
+    if (a) if (b) s1++; else s2++;
+    printf("s1=%d\n", s1) // is zero
+    printf("s2=%d\n", s2) // is one 
+}
+```
+- **write more understandable code**
+```C
+#include <stdio.h>
+
+int main(void){
+    // starting vars
+    int s1 = 0;
+    int s2 = 0;
+    int a = 1;
+    int b = 0;
+if(a){
+    if(b){
+        s1++;
+    } else{
+        s2++;
+    }
+}
+printf("============\n");
+printf("s1=%d\n", s1);
+printf("s2=%d\n", s2);
+```
+## Ternary Operator
+- takes **thre** expressions as operands
+```C
+exp1 ? exp2 : exp3
+```
+- exp1 is evaluated first
+  - if exp1 is TRUE, exp2 is evaluated and its value is used in the ternary operation
+  - if exp1 is FALSE, exp3 is evaluaated and its value is used instead
