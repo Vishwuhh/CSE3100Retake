@@ -8,8 +8,8 @@ int main(void){
     int i = 1;
     while(scanf("%lf", &x) == 1) {
         total = total + x;
-        i++;
         average = (total)/i; 
+        i++;
         printf("Total=%f Average=%f\n", total, average);
     }
 }
