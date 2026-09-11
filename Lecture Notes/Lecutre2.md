@@ -124,4 +124,42 @@ exp1 ? exp2 : exp3
 ```
 - exp1 is evaluated first
   - if exp1 is TRUE, exp2 is evaluated and its value is used in the ternary operation
-  - if exp1 is FALSE, exp3 is evaluaated and its value is used instead
+  - if exp1 is FALSE, exp3 is evaluated and its value is used instead
+```C
+#include <stdio.h>
+
+int main(void){
+    int i = 5;
+    int j = 1;
+    int min + i < j ? i : j;
+    printf("The value of min is: %d\n", min); // prints 1
+    return 0;
+}
+```
+### Multi-way branching using "else-if"
+```C
+// assume all variables are defined as int
+...
+if(i == 0){
+    n0++;
+} elif(i == 1){
+    n1++;
+} elif(i == 2){
+    n2++;
+} else{
+    n_other++;
+}
+```
+## While Loop
+```C
+int i = 0;
+int sum = 0;
+
+while(i<100){ 
+    sum = sum + 1;
+    i++
+}
+
+// equivalent to
+while(i < 100) sum += i++;
+```
