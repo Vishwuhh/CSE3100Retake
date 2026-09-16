@@ -118,7 +118,7 @@ printf("s1=%d\n", s1);
 printf("s2=%d\n", s2);
 ```
 ## Ternary Operator
-- takes **thre** expressions as operands
+- takes **three** expressions as operands
 ```C
 exp1 ? exp2 : exp3
 ```
@@ -163,3 +163,97 @@ while(i<100){
 // equivalent to
 while(i < 100) sum += i++;
 ```
+## Do-While Loop
+- checks condition **after** executing the loop body, so the statement is executed *at least once*
+```C
+int i = 0;
+int sum = 0;
+
+do{
+    sum = sum + i;
+    i++;
+} while(i < 100);
+```
+## For Loop
+- also called a counting loop, and has three expressions
+- `initialization, condition, and increment
+```C
+exp1;
+while(exp2){
+    <stmt>
+    exp3;
+}
+```
+### Computing the Sum of [0, 99] Using For-loop
+```C
+int i, sum;
+// first method
+sum = 0;
+for(i = 0; i < 100; i++) sum = sum + i;
+
+// second method with initializations inside
+for(sum = i = 0; i < 100; i++) sum += i;
+
+// third method with comma operator
+for(sum = 0, i = 0; i < 100; sum += i, i++)
+```
+### Compact For-loop
+```C
+#include <stdio.h>
+
+int main(void){
+    for(int i = 0; i < 5; i++){ // all vars for for-loop declared in the loop
+        printf("i+%d\n", i);
+    }
+    return 0;
+}
+```
+## Comma Operator
+- takes two expressions
+```C
+exp1, exp2
+```
+- exp1 evaluated first, and then exp2 with exp2 being the **result of whole operation**
+- has the lowest precedence out of all operations
+- associated from left to right, with *order being important*
+## Switch Statements
+- also called selection statements
+```C
+swtich(<integer expression>) {
+    case <int_const1>:
+        <statements>
+    case <int_const>:
+    case <int_const>:
+        <statements>
+    default:
+        <statements>
+}
+```
+### Example of Switch Statements
+```C
+// assume all vars defined as integers
+switch(i){
+    case 0:
+        n0++;
+        break
+    case 1: // no break for case 1, so contoinues
+    case 2: 
+    {
+        // can put a block and define new variables
+        int a = d + 10;
+        n1 = a*10;
+        break;
+    }
+}
+```
+### When to Use Switch Statements
+- when using if else statements becomes highly inefficient and hard to read
+## Break Statement
+- for switch statements to prevent fallthrough into another case
+- works in loops
+  - stops execution immediatelt, control resumes at statement following the loop
+## Continue Statement
+- skips the rest of the **current loop iteration** and continues into the next one
+- used within for, while, and do-while loops
+  - appears in nested if/else loops as well, and applies to **innermost enclosing loop**
+  - for loops goes to the evaluation of the increment expression
