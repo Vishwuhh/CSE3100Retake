@@ -3,65 +3,41 @@
 
 double two_d_random(int n)
 {
-
-	//Fill in code below
-	//When deciding which way to go for the next step, generate a random number as follows.
-	//r = rand() % 4;
-	//Treat r = 0, 1, 2, 3 as up, right, down and left respectively.
-
-	//The random walk should stop once the x coordinate or y coordinate reaches $-n$ or $n$. 
-	//The function should return the fraction of the visited $(x, y)$ coordinates inside (not including) the square.
-
-	int side = 2*n - 1;
-
-	int visited[side][side]; // visited[row][column] 
-	// 0 = not visited, 1 = visited
-	int i, j;
-
-	for(i = 0; i < side; i++) {
-		for(j = 0; j < side; j++) {
-			visited[i][j] = 0;
-		}
-	}
-
-	int x, y = 0;
-	int count = 1; // origin is the first visited point
-
-	visited[n-1][n-1] = 1;
-
-	while(x != -n && x != n && y != -n && y != n) {
-		int r = rand() % 4; 
-	   if(r == 0){
-            y--;
+    int size = 2 * n + 1;
+    
+    int visited[size][size];
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            visited[i][j] = 0;
         }
-        else if(r == 1){
-            x++;
-        }
-        else if(r == 2){
-            y++;
-        }
-        else{
-            x--;
+    }
+
+    int x = 0; 
+    int y = 0;
+    int visited_count = 0;
+
+    while (x > -n && x < n && y > -n && y < n) {
+        
+        if (visited[y + n][x + n] == 0) {
+            visited[y + n][x + n] = 1;
+            visited_count++;
         }
 
+        int r = rand() % 4;
+        if (r == 0) {
+            y++;       // up
+        } else if (r == 1) {
+            x++;       // right
+        } else if (r == 2) {
+            y--;       // down
+        } else if (r == 3) {
+            x--;       // left
+        }
+    }
 
-		if(x == -n || x == n || y == -n || y == n) {
-			break;
-		}
-
-		int row = y + (n-1);
-		int col = x + (n-1);
-
-		if(visited[row][col] == 0) {
-			visited[row][col] = 1;
-			count++;
-		}
-	}
-
-	int total = side * side;
-
-	return (double) count/total;
-	
+    double total_inside = (2.0 * n - 1.0) * (2.0 * n - 1.0);
+    
+    return (double)visited_count / total_inside;
 }
 
 //Do not change the code below
@@ -85,4 +61,3 @@ int main(int argc, char *argv[])
 	}
 	return 0;
 }
-

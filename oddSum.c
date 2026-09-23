@@ -3,22 +3,26 @@
 
 int oddSumHelp(int count, int bound, int value)
 {
-	//fill in your code below
-	
-	// the number selected is the number of odd digits needed
-	if(count == 0) {
-		return value = 0;
-	}
-	// no more positive odd numbers exist or our sum is too far
-	if(bound <= 0 || value <= 0) {
-		return 0; // ends it
-	}
-	if(oddSumHelp(count -1, bound -2, value - bound)) {
-		printf("%d ", bound);
+    if (count == 0 && value == 0) {
+        return 1;
+    }
+    
+    if (count <= 0 || value <= 0 || bound <= 0) {
+        return 0;
+    }
 
-		return 1;
-	}
-	return oddSumHelp(count, bound - 2, value);
+    if (oddSumHelp(count - 1, bound - 2, value - bound)) {
+        // If it leads to a valid sum, print it. 
+        // Because of the call stack unwinding, the smallest numbers print first.
+        printf("%d ", bound);
+        return 1;
+    }
+
+    if (oddSumHelp(count, bound - 2, value)) {
+        return 1;
+    }
+
+    return 0;
 }
 
 //Do not change the code below
