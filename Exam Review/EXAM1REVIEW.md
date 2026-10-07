@@ -485,3 +485,13 @@ Node *fight(int particles[], int count)
 ```
 ### Why while Instead Of if
 - if we're given the numbers {2, 4, 6, -10}
+  - -10 could destroy {6, 4, 2}, meaning one particle could cause multiple collisions 
+  - means that we would need a **while()** instead of **if()**
+- exam clue
+  - if one item could repeatedly do something, you would probably need a while loop
+## Null Pointer Safety
+```C
+if(p != NULL && p->value > 0)
+```
+- this is coorect, since C evaluates && from the left to the right 
+-   \
