@@ -391,5 +391,97 @@ absolute value = mass
 - smaller mass would die in collision; if masses were equal, they *both* die
 ### Only Collision Arrangement
 ```C
+positive then negative
 
+->   <-
 ```
+- this means that below is the **collision condition**
+```C
+top > 0 && current < 0
+```
+- the following **does not** collide
+```C
+← ←
+→ →
+← →
+```
+### General Particle Algorithm
+```
+IF current > 0
+    PUSH
+
+ELSE current < 0
+
+    WHILE
+        stack is not empty
+        AND top > 0
+        AND |top| < |current|
+
+        POP top
+
+    AFTER LOOP:
+
+    CASE 1:
+    top positive and same magnitude
+        POP top
+        current also disappears
+
+    CASE 2:
+    stack empty
+    OR top negative
+        PUSH current
+
+    CASE 3:
+    top positive and larger
+        current disappears
+        DO NOTHING
+```
+### Particle Template
+```C
+Node *fight(int particles[], int count)
+{
+    Node *stack = NULL;
+
+    for (int i = 0; i < count; i++) {
+
+        int current = particles[i];
+
+        if (current > 0) {
+
+            push(&stack, current);
+        }
+
+        else {
+
+            while (stack != NULL &&
+                   top(stack) > 0 &&
+                   abs(top(stack)) < abs(current))
+            {
+                pop(&stack);
+            }
+
+
+            if (stack != NULL &&
+                top(stack) > 0 &&
+                abs(top(stack)) == abs(current))
+            {
+                pop(&stack);
+            }
+
+            else if (stack == NULL ||
+                     top(stack) < 0)
+            {
+                push(&stack, current);
+            }
+
+            else {
+                // current is destroyed
+            }
+        }
+    }
+
+    return stack;
+}
+```
+### Why while Instead Of if
+- if we're given the numbers {2, 4, 6, -10}
