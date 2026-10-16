@@ -8,7 +8,8 @@
 int main(int argc, char **argv)
 {
     pid_t child;
-    int exitStatus;
+    int firstStatus;
+    int secondStatus;
 
     if (argc < 4) {
         fprintf(stderr,
@@ -16,7 +17,6 @@ int main(int argc, char **argv)
                 argv[0]);
         return 1;
     }
-
 
     child = fork();
 
@@ -27,22 +27,14 @@ int main(int argc, char **argv)
 
     if (child == 0) {
         execlp(argv[1], argv[1], argv[2], (char *)NULL);
-
         perror("execlp()");
         _exit(127);
     }
 
-    if (waitpid(child, &exitStatus, 0) == -1) {
+    if (waitpid(child, &firstStatus, 0) == -1) {
         perror("waitpid()");
         return 1;
     }
-
-    printf("exited=%d exitstatus=%d\n",
-           WIFEXITED(exitStatus),
-           WIFEXITED(exitStatus) ? WEXITSTATUS(exitStatus) : 0);
-
-    fflush(stdout);
-
 
     child = fork();
 
@@ -53,20 +45,22 @@ int main(int argc, char **argv)
 
     if (child == 0) {
         execvp(argv[3], &argv[3]);
-
         perror("execvp()");
         _exit(127);
     }
 
-    if (waitpid(child, &exitStatus, 0) == -1) {
+    if (waitpid(child, &secondStatus, 0) == -1) {
         perror("waitpid()");
         return 1;
     }
 
     printf("exited=%d exitstatus=%d\n",
-           WIFEXITED(exitStatus),
-           WIFEXITED(exitStatus) ? WEXITSTATUS(exitStatus) : 0);
+           WIFEXITED(firstStatus),
+           WIFEXITED(firstStatus) ? WEXITSTATUS(firstStatus) : 0);
+
+    printf("exited=%d exitstatus=%d\n",
+           WIFEXITED(secondStatus),
+           WIFEXITED(secondStatus) ? WEXITSTATUS(secondStatus) : 0);
 
     return 0;
 }
-
