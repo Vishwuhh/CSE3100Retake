@@ -120,5 +120,36 @@ int open(const char *path, int oflag);
   - O_CREAT - creates a file if it does not exist
 ### Creating a File With open()
 ```C
+// mode must be provided if O_CREAT or O_TMPFILE is set
+int open(const char *path, int oflag, int mode);
 
+open("b.txt", O_WRONLY | O_TRUNC | O_CREAT, 0600);
+```
+- open b.txt for write
+  - if file exists, truncate the contents
+  - if file does not exist, create one, set permision so owner of the file can read/write but others cannot
+### File Descriptors 
+- file descriptor is a non-negative integer associated with file 
+```C
+#include <stdio.h>
+int fileno(FILE *stream);
+// returns file descritpro for a stream
+```
+- FD
+  - 0 - stdin
+  - 1 - stdout
+  - 2 - stderr
+### File Descriptors after fork and exec
+- opened files **are not affected** by upgrade operation
+```C
+pid_t pid = fork();
+assert(pid >= 0);
+if(pid == 0) {
+  // child process can get to FDs 0, 1, 2
+  // if execl() is successful, gcc can access FDs 0, 1, 2
+  execlp("gcc", "gcc", "a.c", NULL);
+  // if control gets there, execlp() failed
+  //terminate child process
+  return 1;
+}
 ```
