@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -8,8 +9,6 @@
 #include <sys/types.h>
 #include <dirent.h>
 
-// search TODO to find the place you need to work on
-
 void die(char *s)
 {
     fprintf(stderr, "Error: %s\n", s);
@@ -18,15 +17,15 @@ void die(char *s)
     exit(EXIT_FAILURE);
 }
 
-#define MAX_VALUE       1000
-#define MSG_BUF_SIZE    100
+#define MAX_VALUE 1000
+#define MSG_BUF_SIZE 100
 #define PIPEFD_READ 0
 #define PIPEFD_WRITE 1
 
-typedef  struct {
+typedef struct {
     int v;
     int num_attempts;
-    char message[MSG_BUF_SIZE]; 
+    char message[MSG_BUF_SIZE];
 } gmn_t;
 
 void gmn_init(gmn_t *pg, int seed)
@@ -35,15 +34,15 @@ void gmn_init(gmn_t *pg, int seed)
     pg->v = rand() % MAX_VALUE + 1;
     pg->num_attempts = 0;
     strcpy(pg->message, "You have not got the right number yet.\n");
-} 
+}
 
 int gmn_check(gmn_t *pg, int guess)
 {
-    pg->num_attempts ++;
+    pg->num_attempts++;
     if (pg->v == guess) {
-        snprintf(pg->message, MSG_BUF_SIZE, 
-                "It took you %d attempt(s) to guess the number %d.\n", 
-                pg->num_attempts, pg->v);  
+        snprintf(pg->message, MSG_BUF_SIZE,
+                "It took you %d attempt(s) to guess the number %d.\n",
+                pg->num_attempts, pg->v);
         return 0;
     }
     if (pg->v > guess)
@@ -51,24 +50,67 @@ int gmn_check(gmn_t *pg, int guess)
     return -1;
 }
 
-char * gmn_get_message(gmn_t *pg)
+char *gmn_get_message(gmn_t *pg)
 {
     return pg->message;
 }
 
-int    gmn_get_max()
+int gmn_get_max()
 {
     return MAX_VALUE;
 }
 
-// this function runs the demo session
-// all gmn_ functions should be called in child process 
-// and then send the result to the parent process
+void write_bytes(int fd, const void *buffer, size_t count)
+{
+    const char *p = buffer;
+
+    while (count > 0) {
+        ssize_t n = write(fd, p, count);
+
+        if (n < 0 && errno == EINTR)
+            continue;
+
+        if (n <= 0)
+            die("write() failed.");
+
+        p += n;
+        count -= n;
+    }
+}
+
+void read_bytes(int fd, void *buffer, size_t count)
+{
+    char *p = buffer;
+
+    while (count > 0) {
+        ssize_t n = read(fd, p, count);
+
+        if (n < 0 && errno == EINTR)
+            continue;
+
+        if (n <= 0)
+            die("read() failed.");
+
+        p += n;
+        count -= n;
+    }
+}
+
+void write_int(int fd, int value)
+{
+    write_bytes(fd, &value, sizeof(value));
+}
+
+int read_int(int fd)
+{
+    int value;
+    read_bytes(fd, &value, sizeof(value));
+    return value;
+}
+
 void guess_my_number(int seed)
 {
     gmn_t gmn;
-
-    // initialize the game
     gmn_init(&gmn, seed);
 
     int min = 1;
@@ -76,90 +118,74 @@ void guess_my_number(int seed)
     int result;
 
     do {
-        // make a guess
-        int guess = (min + max)/2;
+        int guess = (min + max) / 2;
         printf("My guess: %d\n", guess);
 
-        // check
         result = gmn_check(&gmn, guess);
 
-        // if not correct, prepare for the next guess
-        if(result > 0) 
+        if (result > 0)
             min = guess + 1;
-        else if(result < 0)
+        else if (result < 0)
             max = guess - 1;
+
     } while (result != 0);
 
-    // print out the final message
     fputs(gmn_get_message(&gmn), stdout);
 }
 
-// Tasks for the child process. 
-// 
-// Parameters:
-//  fdp:    the pipe for parent to write and for child to read 
-//  fdc:    the pipe for child to write and for parent to read
-//  seed:   seed for the random numer
-//
-// This function should not return.
-// This function does not print any characters, except for error messages.
-void    child_main(int fdp[], int fdc[], int seed)
+void child_main(int fdp[], int fdc[], int seed)
 {
-    gmn_t   gmn;
-
+    gmn_t gmn;
     gmn_init(&gmn, seed);
 
-    // TODO
-    //  close unused file descriptors
-    //  send max value to the parent 
-    //  repeat the following until guess from parent is correct 
-    //      wait for a guess from parent 
-    //      call gmn_check() 
-    //      send the result to parent
-    //  send the final message back (as a string) 
-    //  close all pipe file descriptors
+    if (close(fdp[PIPEFD_WRITE]) == -1)
+        die("close() failed.");
 
-    close(fdp[PIPEFD_WRITE]);
-    close(fdc[PIPEFD_READ]);
+    if (close(fdc[PIPEFD_READ]) == -1)
+        die("close() failed.");
 
-    write_int(fdc[PIPEFD_WRITE], gmn_get_max()); // sends the max val to parent
+    write_int(fdc[PIPEFD_WRITE], gmn_get_max());
+
     int result;
-    while(result != 0) {
-        int guess = read_int(fdp[PIPEFD_READ]); // reads pipe for guess from parent 
-        result = gmn_check(&gmn, guess); // calls gmn_check() and sends the output
-        wrote_int(fdc[PIPEFD_WRITE], result);
-    }
 
-    char *msg = gmn_get_message(&gmn);
-    if(write(fdc[PIPEFD_WRITE], msg, strlen(msg) != (ssize_t)strlen(msg))); {
-        perror("Final message write failed");
-        exit(EXIT_FAILURE);
-    }
-    // closes pipe ends 
-    close(fdc[PIPEFD_READ]);
-    close(fdc[PIPEFD_WRITE]);
+    do {
+        int guess = read_int(fdp[PIPEFD_READ]);
+
+        result = gmn_check(&gmn, guess);
+
+        write_int(fdc[PIPEFD_WRITE], result);
+
+    } while (result != 0);
+
+    char *message = gmn_get_message(&gmn);
+
+    write_bytes(fdc[PIPEFD_WRITE], message, strlen(message));
+
+    if (close(fdp[PIPEFD_READ]) == -1)
+        die("close() failed.");
+
+    if (close(fdc[PIPEFD_WRITE]) == -1)
+        die("close() failed.");
+
     exit(EXIT_SUCCESS);
 }
-
-void    print_file_descriptors(int child);
 
 int main(int argc, char *argv[])
 {
     int seed = 3100;
     int demo = 0;
 
-    // parse the command line arguments
-
-    for (int i = 1; i < argc; i ++) {
-        if (! strcmp(argv[i], "demo")) {
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "demo")) {
             demo = 1;
-        } else if (! strcmp(argv[i], "-h")) {
+        } else if (!strcmp(argv[i], "-h")) {
             fprintf(stderr, "Usage: %s [<seed>] [demo]\n", argv[0]);
             return 1;
         } else {
             seed = atoi(argv[i]);
+
             if (seed <= 0)
-                die("seed must be a postive number.");
+                die("seed must be a positive number.");
         }
     }
 
@@ -168,98 +194,66 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    // Now, we do it using two processes
-    // The child generates a random number
-    // The parent tries to guess the number.
-    // The child tell the parent
-
-    // two pipes
-    // fdp : parent writes
-    // fdc : child writes
-    
     int fdp[2], fdc[2];
-    
-    int min = 1;
-    int max;
-    int guess;
-    int result;
-    
-    //pipe creation
+
     if (pipe(fdp) == -1)
         die("pipe() failed.");
 
     if (pipe(fdc) == -1)
         die("pipe() failed.");
 
-    pid_t pid;
-    pid = fork();
+    pid_t pid = fork();
 
     if (pid < 0)
         die("fork() failed.");
 
-    if(pid == 0)
-        child_main(fdp, fdc, seed); // never returns
-    
-    // parent continues
-    
+    if (pid == 0)
+        child_main(fdp, fdc, seed);
+
     int min = 1;
     int max;
     int guess;
     int result;
 
-    // TODO
-    //      close unused pipe file descriptor
-    close(fdp[PIPEFD_READ]);
-    close(fdp[PIPEFD_WRITE]);
-    //      get max from the child
-    if(read(fdc[PIPEFD_READ], &max, sizeof(int)) != sizeof(int)) { // checks if parent sent anything to child in pipe
-        perror("Parent failed to read max value");
-        exit(EXIT_FAILURE);
-    }
+    if (close(fdp[PIPEFD_READ]) == -1)
+        die("close() failed.");
 
-    do { 
-        guess = (min + max)/2;
+    if (close(fdc[PIPEFD_WRITE]) == -1)
+        die("close() failed.");
+
+    max = read_int(fdc[PIPEFD_READ]);
+
+    do {
+        guess = (min + max) / 2;
         printf("My guess: %d\n", guess);
 
-        // TODO
-        //     send guess to the child
-        //     wait for the result from the child
+        write_int(fdp[PIPEFD_WRITE], guess);
 
-        if(write(fdp[PIPEFD_WRITE], &guess, sizeof(int)) != sizeof(int)) {
-            perror("Parent failed to write guess");
-            exit(EXIT_FAILURE);
-        }
+        result = read_int(fdc[PIPEFD_READ]);
 
-        if(write(fdp[PIPEFD_READ], &result, sizeof(int)) != sizeof(int)) {
-            perror("Parent failed to read result");
-            exit(EXIT_FAILURE);
-        }
-
-        // adjusts search range based if result is greater or lesser than zero
         if (result > 0)
-            min = guess + 1; // increments minimum val in range
+            min = guess + 1;
         else if (result < 0)
-            max = guess - 1; // decrements maximum val in range
+            max = guess - 1;
+
     } while (result != 0);
 
-    // flush stdout buffer
     fflush(stdout);
 
-    // TODO
-    //      receive the final message and print it to stdout
-     char c;
-    // message is in ASCII and ends with a newline
-    while(read(fdc[PIPEFD_READ], &c, 1) > 0) {
+    char c;
+
+    do {
+        read_bytes(fdc[PIPEFD_READ], &c, 1);
         putchar(c);
-        if(c == '\n') {
-            break; // ends process after newline char
-        }
-    }
-    //      close all pipe file descriptors
-    close(fdp[PIPEFD_WRITE]);
-    close(fdp[PIPEFD_READ]);
-    //wait for the child process to finish
+    } while (c != '\n');
+
+    if (close(fdp[PIPEFD_WRITE]) == -1)
+        die("close() failed.");
+
+    if (close(fdc[PIPEFD_READ]) == -1)
+        die("close() failed.");
+
     wait(NULL);
+
     return 0;
 }
-
