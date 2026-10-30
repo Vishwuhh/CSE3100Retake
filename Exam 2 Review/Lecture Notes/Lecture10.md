@@ -1,6 +1,7 @@
 # Lecture 10: Redirection
 > What happens if we want processes to give us outputs in different places?
->> Why would we want input/output from different places?
+> 
+> Why would we want input/output from different places?
 - we can run different operations at the same time (parallel)
   - need different file descriptors for input and output
 ## How to Redirect Things?
