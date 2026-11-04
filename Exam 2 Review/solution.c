@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-typedef struct { // struct for holding values IMPLEMENT.
+typedef struct { // struct for holding values L
     int a;
     int b;
     char op;
