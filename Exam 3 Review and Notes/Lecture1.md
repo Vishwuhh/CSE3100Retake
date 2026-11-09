@@ -139,6 +139,21 @@ int pthread_join(pthread_t tid, void** status)
  }
 
  void* PrintHello(void* threadarg) {
-    
+    // convert void pointer to struct pointer
+    struct thread_data* my_data = (struct thread_data*) threadarg;
+    // wait for some time based on thread number
+    sleep(1+ 5*(my_data->thread_num %2));
+    // set length var to the length of the message 
+    my_data -> len = strlen(my_data->message);
+    // print thread number, message, and length of message
+    printf("Thread #%d: %s length=%d\n", my_data -> thread_num, my_data->message, my_data->len);
+    // terminate thread
+    pthread_exit(NULL);
  }
 ```
+- OS is in charge of executing threads, meaning if a thread computation time is high, OS could start working on another
+## Threading Summary
+- when you have takss that manipulate same memor and don't want independent copies, **use threading**
+  - threads SHARE memory
+- functions need to take in void* pointer and return a void* or just void to be called by threads
+- **cannot predict which threads finish first**
