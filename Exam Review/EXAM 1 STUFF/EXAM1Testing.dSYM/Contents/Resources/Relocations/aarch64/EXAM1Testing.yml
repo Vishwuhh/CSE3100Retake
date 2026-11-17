@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/vishwabalamurugan/Documents/GitHub/CSE3100Retake/EXAM1Testing'
+relocations:     []
+...
